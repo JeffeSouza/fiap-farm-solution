@@ -68,8 +68,7 @@ farmtech-solutions/
 │   ├── farmtech_stats.R         # 📊 Análise estatística (dados reais)
 │   └── weather_api.R            # 🌤️ API meteorológica (dados reais)
 ├── data/                        # 📁 Arquivos CSV (auto-criado)
-├── docs/
-│   └── resumo_artigo.md         # 📄 Resumo artigo Embrapa
+├── resumo_artigo_embrapa.md     # 📄 Resumo artigo Embrapa (converter para PDF)
 ├── README.md                    # 📖 Este arquivo
 └── COMO_USAR.md                # 🚀 Instruções detalhadas
 ```

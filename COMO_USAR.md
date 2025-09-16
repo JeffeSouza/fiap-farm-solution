@@ -61,8 +61,7 @@ farmtech-solutions/
 │   ├── areas_soja_*.csv           # 🌿 Dados específicos soja
 │   ├── areas_milho_*.csv          # 🌽 Dados específicos milho
 │   └── analise_r_*.csv            # 📊 Resultados análise R
-└── docs/
-    └── resumo_artigo.md           # 📄 Resumo artigo Embrapa
+└── resumo_artigo_embrapa.md       # 📄 Resumo artigo Embrapa (→PDF)
 ```
 
 ## 🔄 Fluxo Integrado Completo
