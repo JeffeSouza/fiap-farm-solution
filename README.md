@@ -17,21 +17,25 @@ Sistema desenvolvido pela startup **FarmTech Solutions** para auxiliar fazendas 
   - 📊 Saída de dados  
   - 🔄 Atualização de dados
   - 🗑️ Deleção de dados
+  - 💾 **Exportar dados para CSV** (integração com R)
   - 🚪 Sair do programa
 - **Armazenamento em vetores** (listas Python)
 - **Loops e estruturas de decisão**
 
 ### 📈 Aplicação R (`r/farmtech_stats.R`)
+- **Importa dados reais** exportados do Python via CSV
 - **Estatísticas descritivas**: média, desvio padrão, mediana
-- **Análise comparativa** entre culturas
-- **Correlações** entre variáveis
-- **Resumo executivo** com indicadores
+- **Análise comparativa** entre culturas (teste t)
+- **Correlações** entre variáveis geométricas
+- **Análise de eficiência** geométrica
+- **Resumo executivo** com indicadores e recomendações
 
 ### 🌤️ Integração Meteorológica (`r/weather_api.R`)
-- **Coleta de dados climáticos** via API
-- **Análise de condições agrícolas**
+- **Conecta à API wttr.in** (dados climáticos reais)
+- **Coleta dados atuais**: temperatura, umidade, pressão
+- **Análise de condições agrícolas** baseada em dados reais
 - **Recomendações para atividades** (plantio, colheita, aplicações)
-- **Histórico climatológico**
+- **Sistema de backup** com dados simulados se API falhar
 
 ## 🚀 Como Executar
 
@@ -41,13 +45,13 @@ cd farmtech-solutions/python
 python3 farmtech_app.py
 ```
 
-### R - Estatísticas
+### R - Análise Estatística (dados reais do Python)
 ```bash
 cd farmtech-solutions/r
 Rscript farmtech_stats.R
 ```
 
-### R - Dados Meteorológicos
+### R - Dados Meteorológicos (API real)
 ```bash
 cd farmtech-solutions/r
 Rscript weather_api.R
@@ -58,13 +62,16 @@ Rscript weather_api.R
 ```
 farmtech-solutions/
 ├── python/
-│   └── farmtech_app.py      # Aplicação principal Python
+│   ├── farmtech_app.py          # 🐍 Aplicação principal completa
+│   └── gerar_dados_exemplo.py   # 🧪 Gerador de dados teste
 ├── r/
-│   ├── farmtech_stats.R     # Análise estatística
-│   └── weather_api.R        # Integração meteorológica
+│   ├── farmtech_stats.R         # 📊 Análise estatística (dados reais)
+│   └── weather_api.R            # 🌤️ API meteorológica (dados reais)
+├── data/                        # 📁 Arquivos CSV (auto-criado)
 ├── docs/
-│   └── resumo_artigo.md     # Resumo do artigo Embrapa
-└── README.md                # Este arquivo
+│   └── resumo_artigo.md         # 📄 Resumo artigo Embrapa
+├── README.md                    # 📖 Este arquivo
+└── COMO_USAR.md                # 🚀 Instruções detalhadas
 ```
 
 ## 🌾 Culturas Suportadas
@@ -86,12 +93,13 @@ farmtech-solutions/
 - **Comparações**: soja vs milho em produtividade e custos
 - **Correlações**: relação entre área e produtividade
 
-## 🌡️ Dados Meteorológicos
+## 🌡️ Dados Meteorológicos (API Real)
 
-- **Temperatura**: análise de condições ideais para crescimento
-- **Umidade**: avaliação de risco de doenças
-- **Vento**: recomendações para aplicação de defensivos
-- **Precipitação**: orientações para plantio e colheita
+- **Temperatura real**: análise de condições atuais (ex: 24°C)
+- **Umidade atual**: avaliação de risco de doenças (ex: 61%)
+- **Pressão atmosférica**: dados em tempo real (ex: 1019 hPa)
+- **Condições climáticas**: status atual (ex: "Sunny")
+- **Fonte**: API wttr.in (gratuita, sem chave necessária)
 
 ## 👥 Equipe
 

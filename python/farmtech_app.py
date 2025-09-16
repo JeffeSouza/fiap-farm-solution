@@ -3,10 +3,14 @@
 FarmTech Solutions - Agricultura Digital
 Sistema de gerenciamento de culturas para fazendas
 Culturas suportadas: Soja e Milho
+Versão com exportação CSV para integração com R
 """
 
 import math
 import sys
+import csv
+import os
+from datetime import datetime
 
 class CulturaData:
     def __init__(self):
@@ -49,6 +53,81 @@ class CulturaData:
         }
         self.insumos_milho.append(insumo)
         return kg_necessarios
+    
+    def exportar_dados_csv(self):
+        """Exporta todos os dados para arquivos CSV"""
+        # Criar diretório data se não existir
+        if not os.path.exists('../data'):
+            os.makedirs('../data')
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Exportar áreas de soja
+        if self.areas_soja:
+            with open(f'../data/areas_soja_{timestamp}.csv', 'w', newline='', encoding='utf-8') as file:
+                writer = csv.DictWriter(file, fieldnames=['largura', 'comprimento', 'area'])
+                writer.writeheader()
+                writer.writerows(self.areas_soja)
+        
+        # Exportar áreas de milho
+        if self.areas_milho:
+            with open(f'../data/areas_milho_{timestamp}.csv', 'w', newline='', encoding='utf-8') as file:
+                writer = csv.DictWriter(file, fieldnames=['raio', 'area'])
+                writer.writeheader()
+                writer.writerows(self.areas_milho)
+        
+        # Exportar insumos de soja
+        if self.insumos_soja:
+            with open(f'../data/insumos_soja_{timestamp}.csv', 'w', newline='', encoding='utf-8') as file:
+                fieldnames = ['produto', 'ml_por_metro', 'num_ruas', 'metros_por_rua', 'total_metros', 'litros_necessarios']
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(self.insumos_soja)
+        
+        # Exportar insumos de milho
+        if self.insumos_milho:
+            with open(f'../data/insumos_milho_{timestamp}.csv', 'w', newline='', encoding='utf-8') as file:
+                fieldnames = ['produto', 'kg_por_hectare', 'hectares', 'kg_necessarios']
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(self.insumos_milho)
+        
+        # Criar arquivo consolidado para R
+        dados_consolidados = []
+        
+        # Adicionar dados de soja
+        for i, area in enumerate(self.areas_soja):
+            dados_consolidados.append({
+                'id': f'soja_{i+1}',
+                'cultura': 'soja',
+                'area_m2': area['area'],
+                'largura': area['largura'],
+                'comprimento': area['comprimento'],
+                'raio': '',
+                'timestamp': timestamp
+            })
+        
+        # Adicionar dados de milho
+        for i, area in enumerate(self.areas_milho):
+            dados_consolidados.append({
+                'id': f'milho_{i+1}',
+                'cultura': 'milho',
+                'area_m2': area['area'],
+                'largura': '',
+                'comprimento': '',
+                'raio': area['raio'],
+                'timestamp': timestamp
+            })
+        
+        # Salvar dados consolidados
+        if dados_consolidados:
+            with open(f'../data/dados_consolidados_{timestamp}.csv', 'w', newline='', encoding='utf-8') as file:
+                fieldnames = ['id', 'cultura', 'area_m2', 'largura', 'comprimento', 'raio', 'timestamp']
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(dados_consolidados)
+        
+        return timestamp
 
 def mostrar_menu():
     print("\n" + "="*50)
@@ -58,7 +137,8 @@ def mostrar_menu():
     print("2. Saída de dados")
     print("3. Atualização de dados")
     print("4. Deleção de dados")
-    print("5. Sair do programa")
+    print("5. Exportar dados para CSV")
+    print("6. Sair do programa")
     print("="*50)
 
 def entrada_dados(cultura_data):
@@ -197,6 +277,38 @@ def deletar_dados(cultura_data):
             cultura_data.areas_milho.pop(indice)
             print("✅ Área de milho deletada!")
 
+def exportar_dados(cultura_data):
+    print("\n💾 EXPORTAÇÃO DE DADOS PARA CSV")
+    
+    total_registros = (len(cultura_data.areas_soja) + len(cultura_data.areas_milho) + 
+                      len(cultura_data.insumos_soja) + len(cultura_data.insumos_milho))
+    
+    if total_registros == 0:
+        print("❌ Nenhum dado disponível para exportação!")
+        print("💡 Adicione alguns dados antes de exportar.")
+        return
+    
+    print(f"📊 Total de registros para exportar: {total_registros}")
+    print(f"   • Áreas de soja: {len(cultura_data.areas_soja)}")
+    print(f"   • Áreas de milho: {len(cultura_data.areas_milho)}")
+    print(f"   • Insumos de soja: {len(cultura_data.insumos_soja)}")
+    print(f"   • Insumos de milho: {len(cultura_data.insumos_milho)}")
+    
+    confirmacao = input("\n🤔 Deseja exportar os dados? (s/n): ").lower()
+    
+    if confirmacao == 's' or confirmacao == 'sim':
+        try:
+            timestamp = cultura_data.exportar_dados_csv()
+            print(f"\n✅ Dados exportados com sucesso!")
+            print(f"📁 Arquivos CSV criados em: ../data/")
+            print(f"🕐 Timestamp: {timestamp}")
+            print(f"📋 Arquivo consolidado: dados_consolidados_{timestamp}.csv")
+            print(f"📈 Pronto para análise no R!")
+        except Exception as e:
+            print(f"❌ Erro ao exportar dados: {e}")
+    else:
+        print("❌ Exportação cancelada.")
+
 def main():
     cultura_data = CulturaData()
     
@@ -213,6 +325,8 @@ def main():
         elif opcao == "4":
             deletar_dados(cultura_data)
         elif opcao == "5":
+            exportar_dados(cultura_data)
+        elif opcao == "6":
             print("\n👋 Obrigado por usar o FarmTech Solutions!")
             print("🌱 Agricultura Digital em suas mãos!")
             sys.exit(0)

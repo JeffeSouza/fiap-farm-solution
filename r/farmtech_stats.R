@@ -1,192 +1,290 @@
 #!/usr/bin/env Rscript
 
-# FarmTech Solutions - Análise Estatística
-# Análise de dados de culturas: Soja e Milho
+# FarmTech Solutions - Análise de Dados Reais do Python
+# Importa dados CSV exportados pela aplicação Python e realiza análises estatísticas
 
-# Função para calcular estatísticas básicas
-calcular_estatisticas <- function(dados, nome_variavel) {
-  if (length(dados) == 0) {
-    cat("Nenhum dado disponível para", nome_variavel, "\n")
-    return()
+# Função para carregar dados CSV mais recente
+carregar_dados_python <- function() {
+  cat("📂 Carregando dados exportados do Python...\n")
+  
+  # Verificar se diretório data existe
+  if (!dir.exists("../data")) {
+    cat("❌ Diretório ../data não encontrado!\n")
+    cat("💡 Execute a aplicação Python e exporte alguns dados primeiro.\n")
+    return(NULL)
   }
   
-  media <- mean(dados)
-  desvio <- sd(dados)
-  mediana <- median(dados)
-  minimo <- min(dados)
-  maximo <- max(dados)
+  # Buscar arquivo consolidado mais recente
+  arquivos_csv <- list.files("../data", pattern = "dados_consolidados_.*\\.csv", full.names = TRUE)
   
-  cat("\n=== ESTATÍSTICAS:", nome_variavel, "===\n")
-  cat("Número de observações:", length(dados), "\n")
-  cat("Média:", round(media, 2), "\n")
-  cat("Desvio Padrão:", round(desvio, 2), "\n")
-  cat("Mediana:", round(mediana, 2), "\n")
-  cat("Mínimo:", round(minimo, 2), "\n")
-  cat("Máximo:", round(maximo, 2), "\n")
-  cat("Coeficiente de Variação:", round((desvio/media)*100, 2), "%\n")
-  cat("==========================================\n")
-  
-  return(list(
-    media = media,
-    desvio = desvio,
-    mediana = mediana,
-    minimo = minimo,
-    maximo = maximo,
-    cv = (desvio/media)*100
-  ))
-}
-
-# Função para gerar dados de exemplo
-gerar_dados_exemplo <- function() {
-  cat("🌱 Gerando dados de exemplo para demonstração...\n")
-  
-  # Dados de áreas de soja (m²) - exemplo de 10 fazendas
-  areas_soja <- c(15000, 22000, 18500, 25000, 20000, 17500, 23000, 19000, 21500, 16000)
-  
-  # Dados de áreas de milho (m²) - exemplo de 8 fazendas
-  areas_milho <- c(12000, 16500, 14000, 18000, 13500, 15000, 17000, 14500)
-  
-  # Dados de produtividade soja (kg/hectare)
-  prod_soja <- c(3200, 3500, 3100, 3800, 3400, 3300, 3600, 3250, 3450, 3150)
-  
-  # Dados de produtividade milho (kg/hectare)
-  prod_milho <- c(8500, 9200, 8800, 9500, 8700, 9000, 9300, 8600)
-  
-  # Dados de custos de insumos soja (R$/hectare)
-  custos_soja <- c(1800, 2100, 1950, 2200, 2000, 1900, 2150, 1850, 2050, 1750)
-  
-  # Dados de custos de insumos milho (R$/hectare)
-  custos_milho <- c(2200, 2500, 2350, 2600, 2300, 2400, 2550, 2250)
-  
-  return(list(
-    areas_soja = areas_soja,
-    areas_milho = areas_milho,
-    prod_soja = prod_soja,
-    prod_milho = prod_milho,
-    custos_soja = custos_soja,
-    custos_milho = custos_milho
-  ))
-}
-
-# Função para análise comparativa
-analise_comparativa <- function(dados) {
-  cat("\n🔍 ANÁLISE COMPARATIVA SOJA vs MILHO\n")
-  cat("=====================================\n")
-  
-  # Comparação de áreas
-  cat("\n📊 ÁREAS DE PLANTIO:\n")
-  area_total_soja <- sum(dados$areas_soja)
-  area_total_milho <- sum(dados$areas_milho)
-  cat("Área total soja:", area_total_soja, "m²\n")
-  cat("Área total milho:", area_total_milho, "m²\n")
-  cat("Percentual soja:", round((area_total_soja/(area_total_soja + area_total_milho))*100, 1), "%\n")
-  cat("Percentual milho:", round((area_total_milho/(area_total_soja + area_total_milho))*100, 1), "%\n")
-  
-  # Comparação de produtividade
-  cat("\n📈 PRODUTIVIDADE:\n")
-  prod_media_soja <- mean(dados$prod_soja)
-  prod_media_milho <- mean(dados$prod_milho)
-  cat("Produtividade média soja:", round(prod_media_soja, 0), "kg/ha\n")
-  cat("Produtividade média milho:", round(prod_media_milho, 0), "kg/ha\n")
-  
-  if (prod_media_milho > prod_media_soja) {
-    cat("🏆 Milho tem maior produtividade por hectare\n")
-  } else {
-    cat("🏆 Soja tem maior produtividade por hectare\n")
+  if (length(arquivos_csv) == 0) {
+    cat("❌ Nenhum arquivo de dados consolidados encontrado!\n")
+    cat("💡 Execute a aplicação Python e exporte dados primeiro.\n")
+    return(NULL)
   }
   
-  # Comparação de custos
-  cat("\n💰 CUSTOS DE INSUMOS:\n")
-  custo_medio_soja <- mean(dados$custos_soja)
-  custo_medio_milho <- mean(dados$custos_milho)
-  cat("Custo médio soja:", round(custo_medio_soja, 0), "R$/ha\n")
-  cat("Custo médio milho:", round(custo_medio_milho, 0), "R$/ha\n")
+  # Pegar arquivo mais recente
+  arquivo_mais_recente <- arquivos_csv[which.max(file.mtime(arquivos_csv))]
+  cat("📄 Carregando arquivo:", basename(arquivo_mais_recente), "\n")
   
-  if (custo_medio_soja < custo_medio_milho) {
-    cat("💡 Soja tem menor custo de insumos por hectare\n")
-  } else {
-    cat("💡 Milho tem menor custo de insumos por hectare\n")
+  # Carregar dados
+  tryCatch({
+    dados <- read.csv(arquivo_mais_recente, stringsAsFactors = FALSE, encoding = "UTF-8")
+    cat("✅ Dados carregados com sucesso!\n")
+    cat("📊 Total de registros:", nrow(dados), "\n")
+    return(dados)
+  }, error = function(e) {
+    cat("❌ Erro ao carregar dados:", e$message, "\n")
+    return(NULL)
+  })
+}
+
+# Função para análise exploratória dos dados
+analise_exploratoria <- function(dados) {
+  cat("\n🔍 ANÁLISE EXPLORATÓRIA DOS DADOS\n")
+  cat("==================================\n")
+  
+  # Resumo básico
+  cat("📋 RESUMO DOS DADOS:\n")
+  cat("Total de registros:", nrow(dados), "\n")
+  cat("Colunas:", ncol(dados), "\n")
+  cat("Culturas únicas:", paste(unique(dados$cultura), collapse = ", "), "\n")
+  
+  # Distribuição por cultura
+  cat("\n📊 DISTRIBUIÇÃO POR CULTURA:\n")
+  tabela_cultura <- table(dados$cultura)
+  for (i in 1:length(tabela_cultura)) {
+    cultura <- names(tabela_cultura)[i]
+    count <- tabela_cultura[i]
+    percent <- round((count / nrow(dados)) * 100, 1)
+    cat(sprintf("• %s: %d registros (%.1f%%)\n", cultura, count, percent))
+  }
+  
+  # Estatísticas de área
+  cat("\n📏 ESTATÍSTICAS DE ÁREA:\n")
+  cat("Área mínima:", round(min(dados$area_m2), 2), "m²\n")
+  cat("Área máxima:", round(max(dados$area_m2), 2), "m²\n")
+  cat("Área média:", round(mean(dados$area_m2), 2), "m²\n")
+  cat("Área mediana:", round(median(dados$area_m2), 2), "m²\n")
+  cat("Desvio padrão:", round(sd(dados$area_m2), 2), "m²\n")
+  
+  return(dados)
+}
+
+# Função para análise estatística detalhada
+analise_estatistica_detalhada <- function(dados) {
+  cat("\n📈 ANÁLISE ESTATÍSTICA DETALHADA\n")
+  cat("================================\n")
+  
+  # Separar dados por cultura
+  dados_soja <- dados[dados$cultura == "soja", ]
+  dados_milho <- dados[dados$cultura == "milho", ]
+  
+  # Análise da soja
+  if (nrow(dados_soja) > 0) {
+    cat("\n🌿 ESTATÍSTICAS DA SOJA:\n")
+    cat("Registros:", nrow(dados_soja), "\n")
+    cat("Área média:", round(mean(dados_soja$area_m2), 2), "m²\n")
+    cat("Desvio padrão:", round(sd(dados_soja$area_m2), 2), "m²\n")
+    cat("Coef. variação:", round((sd(dados_soja$area_m2)/mean(dados_soja$area_m2))*100, 2), "%\n")
+    
+    if (nrow(dados_soja) > 1) {
+      # Análise de largura vs comprimento
+      if (sum(dados_soja$largura != "") > 1) {
+        larguras <- as.numeric(dados_soja$largura[dados_soja$largura != ""])
+        comprimentos <- as.numeric(dados_soja$comprimento[dados_soja$comprimento != ""])
+        
+        if (length(larguras) == length(comprimentos) && length(larguras) > 1) {
+          correlacao <- cor(larguras, comprimentos)
+          cat("Correlação largura x comprimento:", round(correlacao, 3), "\n")
+        }
+      }
+    }
+  }
+  
+  # Análise do milho
+  if (nrow(dados_milho) > 0) {
+    cat("\n🌽 ESTATÍSTICAS DO MILHO:\n")
+    cat("Registros:", nrow(dados_milho), "\n")
+    cat("Área média:", round(mean(dados_milho$area_m2), 2), "m²\n")
+    cat("Desvio padrão:", round(sd(dados_milho$area_m2), 2), "m²\n")
+    cat("Coef. variação:", round((sd(dados_milho$area_m2)/mean(dados_milho$area_m2))*100, 2), "%\n")
+    
+    if (nrow(dados_milho) > 1) {
+      # Análise de raios
+      raios <- as.numeric(dados_milho$raio[dados_milho$raio != ""])
+      if (length(raios) > 1) {
+        cat("Raio médio:", round(mean(raios), 2), "m\n")
+        cat("Raio mínimo:", round(min(raios), 2), "m\n")
+        cat("Raio máximo:", round(max(raios), 2), "m\n")
+      }
+    }
+  }
+  
+  # Comparação entre culturas
+  if (nrow(dados_soja) > 0 && nrow(dados_milho) > 0) {
+    cat("\n⚖️ COMPARAÇÃO ENTRE CULTURAS:\n")
+    
+    area_media_soja <- mean(dados_soja$area_m2)
+    area_media_milho <- mean(dados_milho$area_m2)
+    
+    cat("Área média soja:", round(area_media_soja, 2), "m²\n")
+    cat("Área média milho:", round(area_media_milho, 2), "m²\n")
+    
+    if (area_media_soja > area_media_milho) {
+      diff_percent <- round(((area_media_soja - area_media_milho) / area_media_milho) * 100, 1)
+      cat("🏆 Soja tem área média", diff_percent, "% maior que milho\n")
+    } else {
+      diff_percent <- round(((area_media_milho - area_media_soja) / area_media_soja) * 100, 1)
+      cat("🏆 Milho tem área média", diff_percent, "% maior que soja\n")
+    }
+    
+    # Teste t para diferença de médias (se temos dados suficientes)
+    if (nrow(dados_soja) >= 3 && nrow(dados_milho) >= 3) {
+      teste_t <- t.test(dados_soja$area_m2, dados_milho$area_m2)
+      cat("P-valor do teste t:", round(teste_t$p.value, 4), "\n")
+      
+      if (teste_t$p.value < 0.05) {
+        cat("📊 Diferença estatisticamente significativa (p < 0.05)\n")
+      } else {
+        cat("📊 Diferença não significativa estatisticamente (p >= 0.05)\n")
+      }
+    }
   }
 }
 
-# Função para análise de correlação
-analise_correlacao <- function(dados) {
-  cat("\n🔗 ANÁLISE DE CORRELAÇÃO\n")
+# Função para análise de eficiência
+analise_eficiencia <- function(dados) {
+  cat("\n⚡ ANÁLISE DE EFICIÊNCIA\n")
   cat("========================\n")
   
-  # Correlação entre área e produtividade na soja
-  if (length(dados$areas_soja) == length(dados$prod_soja)) {
-    cor_soja <- cor(dados$areas_soja, dados$prod_soja)
-    cat("Correlação área vs produtividade (Soja):", round(cor_soja, 3), "\n")
+  dados_soja <- dados[dados$cultura == "soja", ]
+  dados_milho <- dados[dados$cultura == "milho", ]
+  
+  # Eficiência da soja (área por unidade de perímetro)
+  if (nrow(dados_soja) > 0) {
+    cat("\n🌿 EFICIÊNCIA GEOMÉTRICA DA SOJA:\n")
     
-    if (abs(cor_soja) > 0.7) {
-      cat("→ Correlação forte\n")
-    } else if (abs(cor_soja) > 0.3) {
-      cat("→ Correlação moderada\n")
-    } else {
-      cat("→ Correlação fraca\n")
+    for (i in 1:nrow(dados_soja)) {
+      if (dados_soja$largura[i] != "" && dados_soja$comprimento[i] != "") {
+        largura <- as.numeric(dados_soja$largura[i])
+        comprimento <- as.numeric(dados_soja$comprimento[i])
+        area <- dados_soja$area_m2[i]
+        perimetro <- 2 * (largura + comprimento)
+        eficiencia <- area / perimetro
+        
+        cat(sprintf("Plot %s: %.2f m²/m de perímetro\n", dados_soja$id[i], eficiencia))
+      }
     }
   }
   
-  # Correlação entre área e produtividade no milho
-  if (length(dados$areas_milho) == length(dados$prod_milho)) {
-    cor_milho <- cor(dados$areas_milho, dados$prod_milho)
-    cat("Correlação área vs produtividade (Milho):", round(cor_milho, 3), "\n")
+  # Eficiência do milho (relação área/raio)
+  if (nrow(dados_milho) > 0) {
+    cat("\n🌽 EFICIÊNCIA GEOMÉTRICA DO MILHO:\n")
     
-    if (abs(cor_milho) > 0.7) {
-      cat("→ Correlação forte\n")
-    } else if (abs(cor_milho) > 0.3) {
-      cat("→ Correlação moderada\n")
-    } else {
-      cat("→ Correlação fraca\n")
+    for (i in 1:nrow(dados_milho)) {
+      if (dados_milho$raio[i] != "") {
+        raio <- as.numeric(dados_milho$raio[i])
+        area <- dados_milho$area_m2[i]
+        eficiencia <- area / raio
+        
+        cat(sprintf("Plot %s: %.2f m²/m de raio\n", dados_milho$id[i], eficiencia))
+      }
     }
   }
+}
+
+# Função para gerar relatório consolidado
+gerar_relatorio_consolidado <- function(dados) {
+  cat("\n📋 RELATÓRIO CONSOLIDADO\n")
+  cat("========================\n")
+  
+  total_area <- sum(dados$area_m2)
+  total_area_ha <- total_area / 10000
+  
+  cat("📊 RESUMO EXECUTIVO:\n")
+  cat("• Total de propriedades analisadas:", nrow(dados), "\n")
+  cat("• Área total:", round(total_area, 2), "m² (", round(total_area_ha, 2), "hectares)\n")
+  cat("• Área média por propriedade:", round(mean(dados$area_m2), 2), "m²\n")
+  
+  if (length(unique(dados$cultura)) > 1) {
+    cat("\n🌾 DISTRIBUIÇÃO POR CULTURA:\n")
+    for (cultura in unique(dados$cultura)) {
+      dados_cultura <- dados[dados$cultura == cultura, ]
+      area_cultura <- sum(dados_cultura$area_m2)
+      percent_cultura <- round((area_cultura / total_area) * 100, 1)
+      
+      cat(sprintf("• %s: %.2f m² (%.1f%% do total)\n", 
+                  tools::toTitleCase(cultura), area_cultura, percent_cultura))
+    }
+  }
+  
+  cat("\n💡 RECOMENDAÇÕES:\n")
+  
+  # Recomendação baseada na variabilidade
+  cv_total <- (sd(dados$area_m2) / mean(dados$area_m2)) * 100
+  if (cv_total > 50) {
+    cat("• Alta variabilidade nas áreas - considerar padronização\n")
+  } else if (cv_total < 20) {
+    cat("• Boa uniformidade nas áreas de plantio\n")
+  }
+  
+  # Recomendação baseada no número de culturas
+  if (length(unique(dados$cultura)) == 1) {
+    cat("• Considerar diversificação de culturas para reduzir riscos\n")
+  } else {
+    cat("• Boa diversificação de culturas implementada\n")
+  }
+  
+  cat("\n✅ Análise concluída com dados reais da aplicação Python!\n")
 }
 
 # Função principal
-main <- function() {
-  cat("🌾 FARMTECH SOLUTIONS - ANÁLISE ESTATÍSTICA 🌾\n")
-  cat("================================================\n")
+main_real_data <- function() {
+  cat("🌾 FARMTECH SOLUTIONS - ANÁLISE DE DADOS REAIS 🌾\n")
+  cat("==================================================\n")
   
-  # Gerar ou carregar dados
-  dados <- gerar_dados_exemplo()
+  # Carregar dados do Python
+  dados <- carregar_dados_python()
   
-  # Calcular estatísticas para cada variável
-  cat("\n📊 CALCULANDO ESTATÍSTICAS DESCRITIVAS...\n")
+  if (is.null(dados)) {
+    cat("\n💡 Para usar esta análise:\n")
+    cat("1. Execute a aplicação Python: python3 farmtech_app_updated.py\n")
+    cat("2. Adicione alguns dados de áreas\n")
+    cat("3. Use a opção '5. Exportar dados para CSV'\n")
+    cat("4. Execute novamente esta análise R\n")
+    return()
+  }
   
-  # Estatísticas das áreas
-  stats_area_soja <- calcular_estatisticas(dados$areas_soja, "ÁREAS DE SOJA (m²)")
-  stats_area_milho <- calcular_estatisticas(dados$areas_milho, "ÁREAS DE MILHO (m²)")
+  # Realizar análises
+  dados <- analise_exploratoria(dados)
+  analise_estatistica_detalhada(dados)
+  analise_eficiencia(dados)
+  gerar_relatorio_consolidado(dados)
   
-  # Estatísticas de produtividade
-  stats_prod_soja <- calcular_estatisticas(dados$prod_soja, "PRODUTIVIDADE SOJA (kg/ha)")
-  stats_prod_milho <- calcular_estatisticas(dados$prod_milho, "PRODUTIVIDADE MILHO (kg/ha)")
+  # Salvar resultados
+  timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
   
-  # Estatísticas de custos
-  stats_custo_soja <- calcular_estatisticas(dados$custos_soja, "CUSTOS SOJA (R$/ha)")
-  stats_custo_milho <- calcular_estatisticas(dados$custos_milho, "CUSTOS MILHO (R$/ha)")
+  # Criar summary dos dados para exportar
+  if (nrow(dados) > 0) {
+    summary_dados <- data.frame(
+      cultura = dados$cultura,
+      area_m2 = dados$area_m2,
+      area_hectares = dados$area_m2 / 10000,
+      timestamp_analise = timestamp
+    )
+    
+    # Salvar summary
+    write.csv(summary_dados, paste0("../data/analise_r_", timestamp, ".csv"), 
+              row.names = FALSE, fileEncoding = "UTF-8")
+    
+    cat("\n💾 Análise salva em: analise_r_", timestamp, ".csv\n")
+  }
   
-  # Análises adicionais
-  analise_comparativa(dados)
-  analise_correlacao(dados)
-  
-  # Resumo executivo
-  cat("\n📋 RESUMO EXECUTIVO\n")
-  cat("===================\n")
-  cat("• Total de fazendas analisadas (soja):", length(dados$areas_soja), "\n")
-  cat("• Total de fazendas analisadas (milho):", length(dados$areas_milho), "\n")
-  cat("• Área média por fazenda (soja):", round(mean(dados$areas_soja), 0), "m²\n")
-  cat("• Área média por fazenda (milho):", round(mean(dados$areas_milho), 0), "m²\n")
-  cat("• Produtividade total estimada (soja):", 
-      round(sum(dados$areas_soja) * mean(dados$prod_soja) / 10000, 0), "kg\n")
-  cat("• Produtividade total estimada (milho):", 
-      round(sum(dados$areas_milho) * mean(dados$prod_milho) / 10000, 0), "kg\n")
-  
-  cat("\n✅ Análise concluída com sucesso!\n")
-  cat("📊 Dados exportados para integração com sistema Python\n")
+  return(dados)
 }
 
-# Executar análise
+# Executar se não estiver em modo interativo
 if (!interactive()) {
-  main()
+  main_real_data()
 }
